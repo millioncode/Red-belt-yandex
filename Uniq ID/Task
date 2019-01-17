@@ -1,0 +1,9 @@
+Разработать макрос UNIQ_ID, который будет формировать идентификатор, уникальный в пределах данного cpp-файла. Например, следующий код должен компилироваться и работать:
+
+int UNIQ_ID = 5;
+string UNIQ_ID = "hello!";
+
+Решение от разработчиков:
+#define UNIQ_ID_IMPL_2(lineno) _a_local_var_##lineno
+#define UNIQ_ID_IMPL(lineno) UNIQ_ID_IMPL_2(lineno)
+#define UNIQ_ID UNIQ_ID_IMPL(__LINE__)
