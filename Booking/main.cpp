@@ -1,134 +1,118 @@
 #include <iostream>
 #include <string>
 #include <deque>
+#include <queue>
 #include <set>
+#include <map>
+#include <stdint.h>
 #include <test_runner.h>
 using namespace std;
-long long time_ =0;
-class abc_time {
-    public:
-        abc_time(const long long& t): time(t) {}
-        long long time;
-};
-class clients_time: public abc_time {
-    public:
-        explicit clients_time(const long long& t, const int& i ): abc_time(t), id(i) {}
-        int id;
-};
-class rooms_time: public abc_time {
-    public:
-        explicit rooms_time(const long long& t, const int& r) : abc_time(t), room(r) {}
-        int room;
-};
+static const int DAY_SEC = 86400;
 
-class Hotel {
-    public:
-        Hotel(const string& name): name_(name), reserved_rooms_(0), last_clients_(0) {}
-        void Add(const long long& time, const int& client_id,
-                 const int& room_count) {
-            time_ = time;
-            // придумать как избавиться от цикла
-            /*for(int i=0; i<room_count; i++) {
-                rooms_.push_back(rooms_time(time_, 1));
-            }*/
-            rooms_.push_back(rooms_time(time_, room_count));
+struct rooms_time {
+        explicit rooms_time(const int64_t & t, const int& r, const int& c) : time(t), rooms_count(r), client(c) {}
+        int64_t time;
+        int rooms_count;
+        int client;
+};
+struct BookInfo {
+        void CHANGE(const int64_t& time, const int64_t& client_id,
+                    const int& room_count) {
+            if (client_count_.lower_bound(client_id) == client_count_.end() ) {
+                client_count_[client_id] = 1;
+                ++last_uniq_clients_;
+            } else ++client_count_.at(client_id);
 
+            book_info_.push(rooms_time(time, room_count, client_id));
             reserved_rooms_ += room_count;
-
-            // удалить из очереди комнат неактуальные
-            // обновить данные по комнатам за сутки
-            Update_rooms();
-
-
-            clients_.push_back(clients_time(time_, client_id));
-            // удалить неактуальных клиентов
-            // оюновить данные по клиентам за сутки
-            // проблема с уник клиентами
-            /*if (uniq_clients_.lower_bound(client_id)==uniq_clients_.end()) {
-                uniq_clients_.insert(client_id);
-            }*/
-            Update_clients();
-            //last_clients_ = uniq_clients_.size();
-
         }
-        void Update_rooms() {
-            for(auto& i : rooms_) {
-                // если время идет по нарастанию, то получается нет смысла всю очередь проверять
-                if (time_ - i.time >= day_sec ) {
-                    reserved_rooms_ -= i.room;
-                    rooms_.pop_front();
+        void UPDATE(const int64_t& time) {
+            while ( !book_info_.empty() && book_info_.front().time <= time - DAY_SEC )
+            {
+                    reserved_rooms_ -= book_info_.front().rooms_count;
+                    --client_count_[book_info_.front().client];
+                    book_info_.pop();
+            }
+            for(auto& x : client_count_) {
+                if (x.second == 0) {
+                    client_count_.erase(x.first);
+                    --last_uniq_clients_;
                 }
-                else break;
             }
-            //reserved_rooms_ = rooms_.size();
         }
-        void Update_clients() {
-            for(auto& i:clients_) {
-                if (time_ - i.time >= day_sec ) {
-                    //int name = i.id;
-                    clients_.pop_front();
+        queue <rooms_time> book_info_;
+        map <int, int64_t> client_count_;
 
-                    //uniq_clients_.erase(name);
-                    /*if (uniq_clients_.lower_bound(name)==uniq_clients_.end()) {
-                        last_clients_--;
-                    }*/
-                }
-                else break;
+        int reserved_rooms_ = 0;
+        int64_t last_uniq_clients_ = 0;
+};
+class Hotels {
+    public:
+        Hotels() {}
+        void BOOK(const int64_t& time, const string& name, const int& client_id,
+                 const int& room_count) {
+            if (all_data_base.lower_bound(name)==all_data_base.end() ) all_data_base[name]= BookInfo();
+            all_data_base[name].CHANGE(time, client_id, room_count);
+            time_ = time;
+            for(auto& hotels : all_data_base) {
+                hotels.second.UPDATE(time_);
             }
-            uniq_clients_.clear();
-            for(auto& x : clients_) {
-                uniq_clients_.insert(x.id);
-            }
-            last_clients_ = uniq_clients_.size();
         }
-        int GetRooms() const {
-            return reserved_rooms_;
+        int64_t CLIENTS(const string& name) const {
+            if (all_data_base.lower_bound(name) == all_data_base.end() ) return 0;
+            return all_data_base.at(name).last_uniq_clients_;
         }
-        int GetClients() const {
-            return last_clients_;
+        int ROOMS(const string& name) const {
+            if (all_data_base.lower_bound(name) == all_data_base.end() ) return 0;
+            return all_data_base.at(name).reserved_rooms_;
         }
     private:
-        static const int day_sec = 86400;
-        const string name_;
-
-        deque <clients_time> clients_;
-        deque <rooms_time> rooms_;
-        set<int> uniq_clients_;
-
-        int reserved_rooms_;
-        int last_clients_;
-        //long long time_;
+        map <string, BookInfo> all_data_base;
+        int64_t time_ = 0;
 };
 void Test() {
-    Hotel Marriott("Marriott");
-    /*Marriott.Add(10, 1, 1);
-    ASSERT_EQUAL(Marriott.GetClients(), 1);
-    ASSERT_EQUAL(Marriott.GetRooms(), 1);
-    Marriott.Add(20, 2, 2);
-    ASSERT_EQUAL(Marriott.GetClients(), 2);
-    ASSERT_EQUAL(Marriott.GetRooms(), 3);
-    Marriott.Add(86415, 2, 1);
-    ASSERT_EQUAL(Marriott.GetClients(), 1);
-    ASSERT_EQUAL(Marriott.GetRooms(), 3);
-    cout << "OK" << endl;*/
-    //ASSERT_EQUAL(Marriott.GetClients(), 0);
-    //ASSERT_EQUAL(Marriott.GetRooms(), 0);
-    Hotel FourSeasons("FourSeasons");
-    FourSeasons.Add(10, 1, 2);
-    ASSERT_EQUAL(FourSeasons.GetClients(), 1);
-    ASSERT_EQUAL(FourSeasons.GetRooms(), 2);
-    //Marriott.Add(10, 1, 1);
-    FourSeasons.Add(86409, 2, 1);
-    ASSERT_EQUAL(FourSeasons.GetClients(), 2);
-    ASSERT_EQUAL(FourSeasons.GetRooms(), 3);
-    //ASSERT_EQUAL(Marriott.GetClients(), 1);
-    Marriott.Add(86410, 2, 10);
-    ASSERT_EQUAL(FourSeasons.GetClients(), 1);
-    ASSERT_EQUAL(FourSeasons.GetRooms(), 1);
-    //ASSERT_EQUAL(Marriott.GetRooms(), 10);
-};
+    Hotels hotels;
+    ASSERT_EQUAL(hotels.CLIENTS("Marriott"), 0);
+    ASSERT_EQUAL(hotels.ROOMS("Marriott"), 0);
+
+    hotels.BOOK(10, "FourSeasons", 1, 2);
+    ASSERT_EQUAL(hotels.CLIENTS("FourSeasons"), 1);
+    ASSERT_EQUAL(hotels.ROOMS("FourSeasons"), 2);
+
+    hotels.BOOK(10, "Marriott", 1, 1);
+    hotels.BOOK(86409, "FourSeasons", 2, 1);
+    ASSERT_EQUAL(hotels.CLIENTS("FourSeasons"), 2);
+    ASSERT_EQUAL(hotels.ROOMS("FourSeasons"), 3);
+    ASSERT_EQUAL(hotels.CLIENTS("Marriott"), 1);
+    hotels.BOOK(86410, "Marriott", 2, 10);
+    ASSERT_EQUAL(hotels.ROOMS("FourSeasons"), 1);
+    ASSERT_EQUAL(hotels.ROOMS("Marriott"), 10);
+}
 int main()
 {
     Test();
+    Hotels hotels;
+    int Q;
+    cin >> Q;
+    for(int i=0; i<Q; i++) {
+        string comm;
+        cin >> comm;
+        if (comm=="BOOK") {
+            int client_id, room_count;
+            int64_t time;
+            string hotel_name;
+            cin >> time >> hotel_name >> client_id >> room_count;
+            hotels.BOOK(time, hotel_name, client_id, room_count);
+        } else if (comm=="CLIENTS") {
+            string hotel_name;
+            cin >> hotel_name;
+            cout << hotels.CLIENTS(hotel_name) << endl;
+        }
+        else if (comm=="ROOMS") {
+             string hotel_name;
+             cin >> hotel_name;
+             cout << hotels.ROOMS(hotel_name) << endl;
+        }
+    }
     return 0;
 }
