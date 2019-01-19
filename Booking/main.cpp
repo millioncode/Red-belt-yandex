@@ -8,7 +8,6 @@
 #include <test_runner.h>
 using namespace std;
 static const int DAY_SEC = 86400;
-
 struct rooms_time {
         explicit rooms_time(const int64_t & t, const int& r, const int& c) : time(t), rooms_count(r), client(c) {}
         int64_t time;
