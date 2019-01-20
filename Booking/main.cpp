@@ -1,3 +1,4 @@
+// failed 4 test
 #include <iostream>
 #include <string>
 #include <deque>
@@ -26,12 +27,14 @@ struct BookInfo {
             reserved_rooms_ += room_count;
         }
         void UPDATE(const int64_t& time) {
+            // проверяю очередь по времени
             while ( !book_info_.empty() && book_info_.front().time <= time - DAY_SEC )
             {
                     reserved_rooms_ -= book_info_.front().rooms_count;
                     --client_count_[book_info_.front().client];
                     book_info_.pop();
             }
+            // проверяю словарь клиент-кол-во, если 0 - то уникальных на 1 меньше
             for(auto& x : client_count_) {
                 if (x.second == 0) {
                     client_count_.erase(x.first);
@@ -52,9 +55,11 @@ class Hotels {
                  const int& room_count) {
             if (all_data_base.lower_bound(name)==all_data_base.end() ) all_data_base[name]= BookInfo();
             all_data_base[name].CHANGE(time, client_id, room_count);
-            time_ = time;
-            for(auto& hotels : all_data_base) {
-                hotels.second.UPDATE(time_);
+            if (time_ != time) {
+                time_ = time;
+                for(auto& hotels : all_data_base) {
+                    hotels.second.UPDATE(time_);
+                }
             }
         }
         int64_t CLIENTS(const string& name) const {
