@@ -23,6 +23,7 @@ void ReversedCopy(T* source, size_t count, T* destination) {
     T* d_first = new T [count];
     reverse_copy(first, last, d_first);
     copy(d_first, d_first+count, destination);
+    delete [] d_first;
 }
 
 void TestSwap() {
