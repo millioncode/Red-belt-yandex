@@ -42,6 +42,21 @@ vector <string_view> SplitStringView (const string& words) {
     }
     return result;
 }
+vector <string_view> SplitStringView2 (const string& words) {
+    vector <string_view> result;
+    string_view _words = words;
+    while (1) {
+        size_t space = _words.find(' ');
+        result.push_back(words.substr(0, space));
+        if (space == _words.npos) {
+            break;
+        }
+        else {
+            _words.remove_prefix(space + 1);
+        }
+    }
+    return result;
+}
 string Prepare(const size_t& number) {
     string words(number, 'a');
     for(size_t i=0; i<number; i+=100) {

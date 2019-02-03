@@ -5,10 +5,11 @@
 using namespace std;
 vector <string> SplitString (const string& words);
 vector <string_view> SplitStringView (const string& words);
+vector <string_view> SplitStringView2 (const string& words);
 string Prepare(const size_t& number);
 int main()
 {
-    string words = Prepare(100'000'000);
+    string words = Prepare(10'000'000);
     {
         LOG_DURATION("SplitString");
         SplitString(words);
@@ -16,6 +17,11 @@ int main()
     {
         LOG_DURATION("SplitStringView");
         SplitStringView(words);
+    }
+    {
+        // какого черта в 2 раза дольше работает ???
+        LOG_DURATION("SplitStringView2");
+        SplitStringView2(words);
     }
     return 0;
 }
