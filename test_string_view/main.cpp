@@ -19,7 +19,6 @@ int main()
         SplitStringView(words);
     }
     {
-        // какого черта в 2 раза дольше работает ???
         LOG_DURATION("SplitStringView2");
         SplitStringView2(words);
     }
