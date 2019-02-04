@@ -15,10 +15,10 @@ class AirportCounter {
     public:
         // конструктор по умолчанию: список элементов пока пуст
         AirportCounter() {
-            for( size_t i = 0; i<SIZE; i++) {
-                _data[i].first = static_cast <TAirport>(i);
-                _data[i].second = 0;
-            }
+            /*for(auto& i : _data) {
+                i = 0;
+            }*/
+            _data.fill(0);
         }
 
         // конструктор от диапазона элементов типа TAirport
@@ -26,31 +26,31 @@ class AirportCounter {
         AirportCounter(TIterator begin, TIterator end):AirportCounter() {
             auto it = begin;
             while (it != end) {
-                _data[static_cast<uint64_t>(*it)].second++;
+                _data[static_cast<uint64_t>(*it)]++;
                 ++it;
             }
         }
 
         // получить количество элементов, равных данному
         size_t Get(TAirport airport) const {
-            return _data[static_cast<uint64_t>(airport) ].second;
+            return _data[static_cast<uint64_t>(airport) ];
         }
 
         // добавить данный элемент
         void Insert(TAirport airport){
-            _data[static_cast<uint64_t>(airport)].second++;
+            _data[static_cast<uint64_t>(airport)]++;
         }
 
         // удалить одно вхождение данного элемента
         void EraseOne(TAirport airport){
-            if (_data[static_cast<uint64_t>(airport)].second > 0) {
-                _data[static_cast<uint64_t>(airport)].second--;
+            if (_data[static_cast<uint64_t>(airport)] > 0) {
+                _data[static_cast<uint64_t>(airport)]--;
             }
         }
 
         // удалить все вхождения данного элемента
         void EraseAll(TAirport airport){
-            _data[static_cast<uint64_t>(airport)].second = 0;
+            _data[static_cast<uint64_t>(airport)] = 0;
         }
 
         using Item = pair<TAirport, size_t>;
@@ -60,11 +60,16 @@ class AirportCounter {
         // получив набор объектов типа Item - пар (аэропорт, количество),
         // упорядоченных по аэропорту
         Items GetItems() const {
-            return _data;
+            // create Items
+            Items items;
+            for(size_t i=0; i<SIZE; i++) {
+                items[i] = make_pair( static_cast<TAirport>(i), _data[i] );
+            }
+            return items;
         }
 
     private:
-        Items _data;
+        array <size_t, static_cast<uint64_t>(TAirport::Last_)> _data;
         const size_t SIZE = static_cast <uint64_t> (TAirport::Last_);
 };
 
@@ -117,6 +122,7 @@ void TestMoscow() {
 
     airport_counter.EraseAll(MoscowAirport::VKO);
     ASSERT_EQUAL(airport_counter.Get(MoscowAirport::VKO), 0);
+
 }
 
 enum class SmallCountryAirports {
