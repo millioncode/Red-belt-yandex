@@ -6,19 +6,15 @@ using namespace std;
 class Editor {
     public:
         // Реализуйте конструктор по умолчанию и объявленные методы
-        Editor(): POS_(1) {
-            TEXT.push_back('|');
-        }
+        Editor(): POS_(0) {}
         void Left() {
             if (POS_>0) {
                 POS_--;
-                swap(TEXT[POS_], TEXT[POS_+1]);
             }
         }
         void Right() {
             if (POS_ < 1'000'000) {
                 POS_++;
-                swap(TEXT[POS_], TEXT[POS_-1]);
             }
         }
         void Insert(char token) {
@@ -27,14 +23,16 @@ class Editor {
             POS_++;
         }
         void Cut(size_t tokens = 1) {
-            auto first = TEXT.begin()+POS_;
-            auto last = first + tokens;
-            BUF = {first, last};
-            TEXT.erase(first, last);
             BUF.clear();
-
+            if (tokens!=0) {
+                auto first = TEXT.begin()+POS_;
+                auto last = (first+tokens < TEXT.end())  ? first + tokens : TEXT.end();
+                BUF = {first, last};
+                TEXT.erase(first, last);
+            }
         }
         void Copy(size_t tokens = 1) {
+            BUF.clear();
             auto first = TEXT.begin()+POS_;
             auto last = first + tokens;
             BUF = {first, last};
@@ -42,7 +40,8 @@ class Editor {
         void Paste() {
             if (!BUF.empty()) {
                 TEXT.insert(TEXT.begin()+POS_, BUF.begin(), BUF.end());
-                BUF.clear();
+                POS_ += BUF.size() ;
+                //BUF.clear();
             }
         }
         string GetText() const {
@@ -50,9 +49,7 @@ class Editor {
             return result;
         }
     public:
-        //container
         deque <char> TEXT;
-        // string_view ?
         string BUF;
         size_t POS_;
 };
@@ -73,15 +70,18 @@ void TestEditing() {
         for(size_t i = 0; i < text_len; ++i) {
             editor.Left();
         }
+        // world
         editor.Cut(first_part_len);
         for(size_t i = 0; i < text_len - first_part_len; ++i) {
             editor.Right();
         }
         TypeText(editor, ", ");
+        // world,
         editor.Paste();
+        // world, hello,_
         editor.Left();
         editor.Left();
-        editor.Cut(3);
+        editor.Cut(3); // почему 3 ????
 
         ASSERT_EQUAL(editor.GetText(), "world, hello");
     }
@@ -99,7 +99,7 @@ void TestEditing() {
         ASSERT_EQUAL(editor.GetText(), "misprint");
     }
 }
-/*
+
 void TestReverse() {
     Editor editor;
 
@@ -126,7 +126,6 @@ void TestNoText() {
 
     ASSERT_EQUAL(editor.GetText(), "");
 }
-
 void TestEmptyBuffer() {
     Editor editor;
 
@@ -145,12 +144,11 @@ void TestEmptyBuffer() {
 
     ASSERT_EQUAL(editor.GetText(), "example");
 }
-*/
 int main() {
     TestRunner tr;
     RUN_TEST(tr, TestEditing);
-    /*RUN_TEST(tr, TestReverse);
+    RUN_TEST(tr, TestReverse);
     RUN_TEST(tr, TestNoText);
-    RUN_TEST(tr, TestEmptyBuffer);*/
+    RUN_TEST(tr, TestEmptyBuffer);
     return 0;
 }
