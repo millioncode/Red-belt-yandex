@@ -1,0 +1,29 @@
+Дан набор строк. Необходимо разбить их на группы, в каждой из которых все строки имеют одинаковый набор символов.
+
+Например, если даны строки law, port, top, laptop, pot, paloalto, wall, awl, нужно разбить их на 4 группы:
+
+строки, состоящие только из букв a, l и w: law, wall, awl;
+строки, состоящие только из букв o, p, r и t: port;
+строки, состоящие только из букв o, p и t: top, pot;
+строки, состоящие только из букв a, l, o, p, t: laptop, paloalto.
+
+ошибка компиляции... но работает)
+template <typename String>
+vector<Group<String>> GroupHeavyStrings(vector<String> strings) {
+    // Напишите реализацию функции,
+    // использовав не более 1 копирования каждого символа
+    map <string, Group<String>> total;
+    for(auto& word: strings) {
+        string _word;
+        for(auto& letter:word) {
+            if (_word.find(letter)==_word.npos) _word.push_back(move(letter));
+        }
+        sort(_word.begin(), _word.end());
+        total[_word].push_back(move(word));
+    }
+    vector<Group<String>> result;
+    for (auto& words : total) {
+        result.push_back(move(words.second));
+    }
+    return result;
+}
