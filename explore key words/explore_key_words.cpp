@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <string_view>
 #include <iterator>
-#include <typeinfo>
+#include <future>
 using namespace std;
 
 struct Stats {
@@ -25,12 +25,14 @@ Stats ExploreLine(const set<string>& key_words, const string& line) {
     string::const_iterator first = line.begin();
     string::const_iterator last = line.end();
     Stats result;
-    while ( (string::const_iterator it = find(first, last, ' ')) != last ) {
+    string::const_iterator it;
+    while ( (it = find(first, last, ' ')) <= last ) {
         string word(first, it);
         if (*key_words.lower_bound(word)==word) {
             result.word_frequences[word]++;
         }
-        first = it;
+        if (it!=last) first = it+1;
+        else break;
     }
     return result;
 }
@@ -47,8 +49,19 @@ Stats ExploreKeyWordsSingleThread(
 
 Stats ExploreKeyWords(const set<string>& key_words, istream& input) {
     // Реализуйте эту функцию
-}
+    return ExploreKeyWordsSingleThread(key_words, input);
 
+}
+void TestOne() {
+    const set<string> key_words = {"yangle", "rocks", "sucks", "all"};
+    string ss {"this new yangle service really rocks"};
+    const map<string, int> expected = {
+            {"yangle", 1},
+            {"rocks", 1},
+        };
+    const auto stats = ExploreLine(key_words, ss);
+    ASSERT_EQUAL(stats.word_frequences, expected);
+}
 void TestBasic() {
     const set<string> key_words = {"yangle", "rocks", "sucks", "all"};
 
@@ -70,12 +83,6 @@ void TestBasic() {
 
 int main() {
     TestRunner tr;
-    //RUN_TEST(tr, TestBasic);
-
-    const string s {"abcdef"};
-    string::const_iterator b = s.begin();
-    auto e = s.end();
-    string ss (b,e);
-    cout << ss << endl;
-
+    RUN_TEST(tr, TestOne);
+    RUN_TEST(tr, TestBasic);
 }
