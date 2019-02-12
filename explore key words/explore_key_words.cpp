@@ -9,6 +9,7 @@
 #include <string_view>
 #include <iterator>
 #include <future>
+#include <functional>
 using namespace std;
 
 struct Stats {
@@ -49,7 +50,23 @@ Stats ExploreKeyWordsSingleThread(
 
 Stats ExploreKeyWords(const set<string>& key_words, istream& input) {
     // Реализуйте эту функцию
-    return ExploreKeyWordsSingleThread(key_words, input);
+    // в один поток - элементарно
+    // return ExploreKeyWordsSingleThread(key_words, input);
+    vector<future<Stats>> total;
+    Stats result;
+    while (!input.eof() ) {
+        string words;
+        for(int i=0; i<100000; i++) {
+            string s;
+            input >> s;
+            words += move(s) + " ";
+        }
+        total.push_back(async(ExploreLine, ref(key_words), words));
+    }
+    for(auto& a : total) {
+        result += a.get();
+    }
+    return result;
 
 }
 void TestOne() {
