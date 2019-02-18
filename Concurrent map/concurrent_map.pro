@@ -13,3 +13,6 @@ SOURCES += \
 HEADERS += \
     profile.h \
     test_runner.h
+
+DISTFILES += \
+    text
