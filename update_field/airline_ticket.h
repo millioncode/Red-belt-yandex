@@ -3,6 +3,8 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <tuple>
+#include <utility>
 using namespace std;
 int ToInt(const string& s);
 struct Date {
@@ -20,6 +22,10 @@ Date Date::operator=(const string& s) {
     this->day = ToInt(day);
     return *this;
 }
+bool operator ==(const Date& a, const Date& b) {
+    return tie(a.year, a.month, a.day) == tie(b.year, b.month, b.day);
+}
+
 int ToInt(const string& s) {
     auto value = 0;
     for(const auto& a : s) {
@@ -66,9 +72,12 @@ struct Time {
         int hours, minutes;
         Time operator=(const string& s);
 };
+bool operator ==(const Time& a, const Time& b) {
+    return tie(a.hours, a.minutes) == tie(b.hours, b.minutes);
+}
 Time Time::operator=(const string& s) {
     auto it1 = find(s.begin(), s.end(), ':');
-    string hour (s.begin(), prev(it1));
+    string hour (s.begin(), it1);
     string min (++it1, s.end());
     this->hours = ToInt(hour);
     this->minutes = ToInt(min);
@@ -86,3 +95,23 @@ struct AirlineTicket {
 };
 
 
+ostream& operator<<(ostream& os, const Date& d) {
+  return os << d.year << '-' << d.month << '-' << d.day;
+}
+
+ostream& operator<<(ostream& os, const Time& t) {
+  return os << t.hours << ':' << t.minutes;
+}
+
+istream& operator >> (istream& is, Date& d) {
+    string s;
+    is >> s;
+    d=s;
+    return is;
+}
+istream& operator >> (istream& is, Time& d) {
+    string s;
+    is >> s;
+    d=s;
+    return is;
+}

@@ -1,10 +1,16 @@
 #include "airline_ticket.h"
 #include "test_runner.h"
-#include<map>
+#include <map>
 using namespace std;
+#define UPDATE_FIELD(ticket, field, values) \
+    {map<string, string>::const_iterator it = values.find(#field); \
+    if (it != values.end() ) { \
+        istringstream is(it->second); \
+        is >> ticket.field;\
+    }}
 
-#define UPDATE_FIELD(ticket, field, values)  \
-    ticket.field = values.at(#field);\
+
+
 
 void UpdateTicket(AirlineTicket& ticket, const map<string, string>& updates) {
     map<string, string>::const_iterator it;
@@ -25,7 +31,7 @@ void UpdateTicket(AirlineTicket& ticket, const map<string, string>& updates) {
         is >> ticket.price;
     }
 
-    ...
+    //...
 }
 void TestUpdate() {
     AirlineTicket t;
@@ -39,7 +45,7 @@ void TestUpdate() {
 
     UPDATE_FIELD(t, departure_time, updates1);
     UPDATE_FIELD(t, price, updates1);
-    /*
+
     ASSERT_EQUAL(t.departure_date, (Date{2018, 2, 28}));
     ASSERT_EQUAL(t.departure_time, (Time{17, 40}));
     ASSERT_EQUAL(t.price, 0);
@@ -59,7 +65,6 @@ void TestUpdate() {
     ASSERT_EQUAL(t.departure_time, (Time{17, 40}));
     ASSERT_EQUAL(t.price, 12550);
     ASSERT_EQUAL(t.arrival_time, (Time{20, 33}));
-    */
 }
 int main() {
     TestRunner tr;
