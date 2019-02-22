@@ -6,25 +6,28 @@
 #include <tuple>
 #include <utility>
 using namespace std;
-int ToInt(const string& s);
+
 struct Date {
         int year, month, day;
-        Date operator=(const string& s);
+        Date& operator=(const string& s);
 };
-Date Date::operator=(const string& s) {
-    auto it1 = find(s.begin(), s.end(), '-');
-    auto it2 = find(++it1, s.end(), '-');
-    string year (s.begin(), prev(it1));
-    string month (it1, it2);
-    string day (++it2, s.end());
-    this->year = ToInt(year);
-    this->month = ToInt(month);
-    this->day = ToInt(day);
-    return *this;
-}
-bool operator ==(const Date& a, const Date& b) {
-    return tie(a.year, a.month, a.day) == tie(b.year, b.month, b.day);
-}
+
+struct Time {
+        int hours, minutes;
+        Time operator=(const string& s);
+
+};
+
+struct AirlineTicket {
+        string from;
+        string to;
+        string airline;
+        Date departure_date;
+        Time departure_time;
+        Date arrival_date;
+        Time arrival_time;
+        int price;
+};
 
 int ToInt(const string& s) {
     auto value = 0;
@@ -68,13 +71,22 @@ int ToInt(const string& s) {
     }
     return value;
 }
-struct Time {
-        int hours, minutes;
-        Time operator=(const string& s);
-};
-bool operator ==(const Time& a, const Time& b) {
-    return tie(a.hours, a.minutes) == tie(b.hours, b.minutes);
+
+Date& Date::operator=(const string& s) {
+    auto it1 = find(s.begin(), s.end(), '-');
+    auto it2 = find(++it1, s.end(), '-');
+    string year (s.begin(), prev(it1));
+    string month (it1, it2);
+    string day (++it2, s.end());
+    this->year = ToInt(year);
+    this->month = ToInt(month);
+    this->day = ToInt(day);
+    return *this;
 }
+bool operator ==(const Date& a, const Date& b) {
+    return tie(a.year, a.month, a.day) == tie(b.year, b.month, b.day);
+}
+
 Time Time::operator=(const string& s) {
     auto it1 = find(s.begin(), s.end(), ':');
     string hour (s.begin(), it1);
@@ -83,22 +95,13 @@ Time Time::operator=(const string& s) {
     this->minutes = ToInt(min);
     return *this;
 }
-struct AirlineTicket {
-        string from;
-        string to;
-        string airline;
-        Date departure_date;
-        Time departure_time;
-        Date arrival_date;
-        Time arrival_time;
-        int price;
-};
-
+bool operator ==(const Time& a, const Time& b) {
+    return tie(a.hours, a.minutes) == tie(b.hours, b.minutes);
+}
 
 ostream& operator<<(ostream& os, const Date& d) {
   return os << d.year << '-' << d.month << '-' << d.day;
 }
-
 ostream& operator<<(ostream& os, const Time& t) {
   return os << t.hours << ':' << t.minutes;
 }
