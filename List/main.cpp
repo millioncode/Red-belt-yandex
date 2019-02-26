@@ -1,6 +1,7 @@
 #include "test_runner.h"
 
 #include <vector>
+#include <list>
 using namespace std;
 
 template <typename T>
@@ -10,6 +11,7 @@ class LinkedList {
                 T value;
                 Node* next = nullptr;
         };
+
         ~LinkedList();
 
         void PushFront(const T& value);
@@ -35,13 +37,14 @@ void LinkedList<T>::PushFront(const T& value) {
 }
 template <typename T>
 LinkedList<T>::~LinkedList() {
-
-
     while (head!=nullptr) {
         Node* ptr = head->next;
         PopFront();
         head = ptr;
     }
+    /*for (auto node = GetHead(); node; node = node->next) {
+          delete node;
+        }
     /*
     while (ptr!=nullptr) {
         Node* value = ptr->next;
@@ -51,55 +54,34 @@ LinkedList<T>::~LinkedList() {
 }
 template <typename T>
 void LinkedList<T>::InsertAfter(Node* node, const T& value) {
-    Node* ptr = head;
-    if (node==nullptr) {
+    if(node){
+        Node* nextNode = node->next;
+        Node* newNode = new Node{value, nextNode};
+        node->next = newNode;
+    } else {
         PushFront(value);
-        return;
     }
-    if (ptr==nullptr) {
-        PushFront(value);
-        return;
-    }
-    while (ptr!=node) {
-        ptr= ptr->next;
-    }
-    Node* after_node = ptr->next;
-    Node* prev_node = ptr;
-    ptr = new Node;
-    ptr->value = value;
-    prev_node->next = ptr;
-    ptr->next = after_node;
 }
 template <typename T>
 void LinkedList<T>::RemoveAfter(Node* node) {
-    Node* ptr = head;
-    if (node==nullptr) {
-        return;
-    }
-    if (ptr==nullptr) {
+    if (!node) {
         PopFront();
-        return;
     }
-    while (ptr!=node && ptr!=nullptr) {
-        ptr= ptr->next;
+    if (node->next) {
+        Node* remove_node = node->next;
+        node->next = node->next->next;
+        delete remove_node;
     }
-    if (ptr==nullptr) return;
-    Node* del_node = ptr->next;
-    Node* after_del_node = del_node->next;
-    ptr->next = after_del_node;
-    del_node->next = nullptr;
-    delete del_node;
 }
 template <typename T>
 void LinkedList<T>::PopFront() {
     if (head != nullptr) {
         Node* ptr = head->next;
-        head->next=nullptr;
+        //head->next=nullptr;
         delete head;
         head = ptr;
     }
 }
-
 
 template <typename T>
 vector<T> ToVector(const LinkedList<T>& list) {
