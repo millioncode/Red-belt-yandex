@@ -10,8 +10,7 @@ class Translator {
     public:
         //source - target
         void Add(string_view source, string_view target) {
-            pair<string, string> value (source, target);
-            all_words.push(move(value));
+            all_words.emplace(source, target);
             source_target[all_words.back().first] = all_words.back().second;
             target_source[all_words.back().second] = all_words.back().first;
         }
