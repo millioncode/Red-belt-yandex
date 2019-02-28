@@ -14,7 +14,16 @@ class Translator {
         }
 
         string_view TranslateForward(string_view source) const {
-            return source_target.at(string(source));
+            string word (source);
+            auto it = source_target.lower_bound(word);
+            if ( (*it).first != word ) {
+                return string("");
+            }
+            else {
+                return (*it).second;
+            }
+
+            //return source_target.at(string(source));
         }
         string_view TranslateBackward(string_view target) const {
             string word (target);
