@@ -3,14 +3,17 @@
 #include <vector>
 #include <string_view>
 #include <map>
+#include <queue>
 using namespace std;
 
 class Translator {
     public:
         //source - target
         void Add(string_view source, string_view target) {
-            source_target[source] = target;
-            target_source[target] = source;
+            pair<string, string> value (source, target);
+            all_words.push(move(value));
+            source_target[all_words.back().first] = all_words.back().second;
+            target_source[all_words.back().second] = all_words.back().first;
         }
 
         string_view TranslateForward(string_view source) const {
@@ -35,6 +38,7 @@ class Translator {
     private:
         map <string_view, string_view> source_target;
         map <string_view, string_view> target_source;
+        queue <pair<string, string>> all_words;
 };
 
 void TestSimple() {
