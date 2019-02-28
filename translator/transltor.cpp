@@ -9,26 +9,22 @@ class Translator {
     public:
         //source - target
         void Add(string_view source, string_view target) {
-            source_target[string(source)] = target;
-            target_source[string(target)] = source;
+            source_target[source] = target;
+            target_source[target] = source;
         }
 
         string_view TranslateForward(string_view source) const {
-            string word (source);
-            auto it = source_target.lower_bound(word);
-            if ( (*it).first != word ) {
+            auto it = source_target.lower_bound(source);
+            if ( (*it).first != source ) {
                 return string("");
             }
             else {
                 return (*it).second;
             }
-
-            //return source_target.at(string(source));
         }
         string_view TranslateBackward(string_view target) const {
-            string word (target);
-            auto it = target_source.lower_bound(word);
-            if ( (*it).first != word ) {
+            auto it = target_source.lower_bound(target);
+            if ( (*it).first != target ) {
                 return string("");
             }
             else {
@@ -37,8 +33,8 @@ class Translator {
         }
 
     private:
-        map <string, string> source_target;
-        map <string, string> target_source;
+        map <string_view, string_view> source_target;
+        map <string_view, string_view> target_source;
 };
 
 void TestSimple() {
