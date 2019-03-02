@@ -27,8 +27,10 @@ class Stats {
         {"unknown", 0}
 }
         {}
+
         void AddMethod(string_view method) {
-            while (1) {
+            Add(method, method_, "UNKNOWN");
+            /*while (1) {
                 size_t space = method.find(' ');
                 if (space == method.npos) {
                     break;
@@ -46,11 +48,11 @@ class Stats {
                     }
                     method.remove_prefix(space+1);
                 }
-            }
+            }*/
         }
         void AddUri(string_view uri) {
-            //cout << uri << endl;
-            while (1) {
+            Add(uri, uri_, "unknown");
+            /*while (1) {
                 size_t space = uri.find(' ');
                 if (space == uri.npos) {
                     break;
@@ -68,9 +70,8 @@ class Stats {
                         }
                     }
                     uri.remove_prefix(space+1);
-                    //cout << uri << endl;
                 }
-            }
+            }*/
         }
         const map<string_view, int>& GetMethodStats() const {
             return method_;
@@ -80,51 +81,91 @@ class Stats {
         }
 
     private:
+        void Add(string_view& method, map<string_view, int>& container, const string& POLE) ;
         map<string_view, int> method_;
         map<string_view, int> uri_;
 
 };
-
-HttpRequest ParseRequest(string_view line) {
-    HttpRequest result;
-    static string methods;
-    methods.clear();
-    static string uri;
-    uri.clear();
+void Stats::Add(string_view& method, map<string_view, int>& container, const string& POLE) {
     while (1) {
-        size_t space = line.find(' ');
+        size_t space = method.find(' ');
+        if (space == method.npos) {
+            break;
+        }
+        else {
+            auto word = method.substr(0, space);
+            auto it = container.lower_bound(word);
+            if ( (*it).first == word  ){
+                container.at(word)++;
+            }
+            else {
+                if (word!="") {
+                    container.at(POLE)++;
+                }
+            }
+            method.remove_prefix(space+1);
+        }
+    }
+}
+
+bool Parse(string_view& line, string& methods) {
+    size_t space = line.find(' ');
+    if (space==line.npos) {
+        methods += line.substr(0, space);
+        methods += " ";
+        return true;
+    }
+    else {
+        methods += line.substr(0, space);
+        methods += " ";
+        line.remove_prefix(space+1);
+        //cout << line << endl;
+    }
+    return false;
+}
+HttpRequest ParseRequest(string_view line) {
+
+    static string methods;
+    static string uri;
+    static string protocol;
+    methods.clear();
+    uri.clear();
+    protocol.clear();
+    while (1) {
+        /*size_t space = line.find(' ');
         if (space==line.npos) {
             methods += line.substr(0, space);
             methods += " ";
             break;
         }
         else {
-            //result.method = line.substr(0, space);
             methods += line.substr(0, space);
             methods += " ";
             line.remove_prefix(space+1);
-        }
-        space = line.find(' ');
+        }*/
+        if (Parse(line, methods)) break;
+        if (Parse(line, uri)) break;
+        if (Parse(line, protocol)) break;
+        /*space = line.find(' ');
         if (space==line.npos) {
             uri += line.substr(0, space);
             uri += " ";
             break;
         }
         else {
-            //result.uri = line.substr(0, space);
             uri += line.substr(0, space);
             uri += " ";
             line.remove_prefix(space+1);
-        }
-        space = line.find(' ');
+        }*/
+        /*size_t space = line.find(' ');
         if (space==line.npos) {
             break;
         }
         else {
             result.protocol = line.substr(0, space);
             line.remove_prefix(space+1);
-        }
+        }*/
     }
-    result = {methods, uri, ""};
-    return result;
+    //HttpRequest result {methods, uri, protocol};
+    return {methods, uri, protocol};
 }
