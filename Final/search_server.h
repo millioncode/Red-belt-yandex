@@ -7,21 +7,26 @@
 #include <vector>
 #include <map>
 #include <string>
+
+#include <deque>
+#include <string_view>
 using namespace std;
 
 class InvertedIndex {
     public:
         void Add(const string& document);
-        list<size_t> Lookup(const string& word) const;
+        // заменю лист на дек
+        deque<size_t> Lookup(const string& word) const;
 
-        const string& GetDocument(size_t id) const {
+        const string_view GetDocument(size_t id) const {
             return docs[id];
         }
 
     private:
-        // ????
-        map<string, list<size_t>> index;
-        vector<string> docs;
+        // // заменю лист на дек
+        map<string, deque<size_t>> index;
+        // заменю стринг на стринг_вью
+        vector<string_view> docs;
 };
 /*
  * непосредственно сам поиск
