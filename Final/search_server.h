@@ -14,19 +14,27 @@ using namespace std;
 
 class InvertedIndex {
     public:
-        void Add(const string& document);
-        // заменю лист на дек
-        deque<size_t> Lookup(const string& word) const;
+        // создам конструктор - принимает поток файлов
+        InvertedIndex() = default ;
+        explicit InvertedIndex(istream& is);
 
-        const string_view GetDocument(size_t id) const {
-            return docs[id];
+        //void Add(const string& document);
+        // заменю лист на дек
+        struct Entry {
+                size_t docid;
+                size_t rating;
+        };
+        const vector<Entry>& Lookup(string_view word) const ;
+
+        const deque<string>& GetDocument() const {
+            return docs;
         }
 
     private:
         // // заменю лист на дек
-        map<string, deque<size_t>> index;
-        // заменю стринг на стринг_вью
-        vector<string_view> docs;
+        map <string_view, vector<Entry> > index;
+        // заменю на deque, string_view?
+        deque<string> docs;
 };
 /*
  * непосредственно сам поиск
@@ -38,7 +46,7 @@ class SearchServer {
          * принимает поток документов
          * один документ = одна строка
          * */
-        explicit SearchServer(istream& document_input);
+        explicit SearchServer(istream& document_input):index(document_input) {}
         /*
          * заменяет базу док-ов на новую
 */

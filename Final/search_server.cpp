@@ -6,91 +6,122 @@
 #include <sstream>
 #include <iostream>
 
-#include <vector>
+#include <numeric>
 
-vector<string> SplitIntoWords(const string& line) {
-    istringstream words_input(line);
-    return {istream_iterator<string>(words_input), istream_iterator<string>()};
+#include <vector>
+void LeftStrip(string_view& sv) {
+  // удаляем лишние пробелы слева
+  while (!sv.empty() && isspace(sv[0])) {
+    sv.remove_prefix(1);
+  }
+}
+string_view ReadToken(string_view& sv) {
+    LeftStrip(sv);
+    // ищем пробел
+    // т.е. позицию конца слова - мы ведь сначала удалили пробелы
+    auto pos = sv.find(' ');
+    // создаем слово
+    auto word = sv.substr(0, pos);
+    // удаляем слово и
+    sv.remove_prefix(pos != sv.npos? pos:sv.size() );
+    return word;
 }
 
-SearchServer::SearchServer(istream& document_input) {
-    UpdateDocumentBase(document_input);
+vector<string_view> SplitIntoWords(string_view line) {
+    vector<string_view> value;
+    /* читаем строку(содержимое файла
+     * за одну итерацию читаем слово
+     * добавляем слово в вектор
+     * */
+    for( string_view word = ReadToken(line); !word.empty() ; word = ReadToken(line)) {
+        value.push_back(word);
+    }
+    return value;
 }
 
 void SearchServer::UpdateDocumentBase(istream& document_input) {
-    InvertedIndex new_index;
-
-    for (string current_document; getline(document_input, current_document); ) {
-        new_index.Add(move(current_document));
-    }
-
-    index = move(new_index);
+    index = InvertedIndex(document_input);
+    // ??? |
 }
 
 void SearchServer::AddQueriesStream(
         istream& query_input, ostream& search_results_output
         ) {
+    const auto& documents = index.GetDocument();
+    vector<size_t> docid_count(documents.size());
+    vector <int64_t> docids(documents.size());
     for (string current_query; getline(query_input, current_query); ) {
-        const auto words = SplitIntoWords(current_query);
-        // заменить словарь на вектор и вынести его за пределы цикла
-        map<size_t, size_t> docid_count;
-        //vector<size_t> docid_count;
+        vector<string_view> words;
+        words = SplitIntoWords(current_query);
+        docid_count.assign(docid_count.size(), 0);
+
         for (const auto& word : words) {
-            for (const size_t docid : index.Lookup(word)) {
-                docid_count[docid]++;
+            for (const auto& [docid, rating]: index.Lookup(word)) {
+                docid_count[docid]+= rating;
             }
         }
 
-        vector<pair<size_t, size_t>> search_results{
-                    docid_count.begin(), docid_count.end()
-                    };
-        // замена sort на partial_sort
-        auto mid = search_results.begin();
-        const auto size = search_results.size();
-        if ( size <= 4 ) {
-            mid += size;
-        }
-        else {
-            mid +=5;
-        }
+        iota(docids.begin(), docids.end(), 0);
 
         partial_sort(
-                    search_results.begin(),
-                    mid,
-                    end(search_results),
-                    [](pair<size_t, size_t> lhs, pair<size_t, size_t> rhs) {
-            int64_t lhs_docid = lhs.first;
-            auto lhs_hit_count = lhs.second;
-            int64_t rhs_docid = rhs.first;
-            auto rhs_hit_count = rhs.second;
-            return make_pair(lhs_hit_count, -lhs_docid) > make_pair(rhs_hit_count, -rhs_docid);
-        }
-
+                begin(docids),
+                Head(docids, 5).end(),
+                end(docids),
+                [&docid_count](int64_t lhs, int64_t rhs) {
+                  return make_pair(docid_count[lhs], -lhs) > make_pair(docid_count[rhs], -rhs);
+                }
         );
-
         search_results_output << current_query << ':';
-        for (auto [docid, hitcount] : Head(search_results, 5)) {
-            search_results_output << " {"
-                                  << "docid: " << docid << ", "
-                                  << "hitcount: " << hitcount << '}';
+                for (size_t docid : Head(docids, 5)) {
+                  const size_t hit_count = docid_count[docid];
+                  if (hit_count == 0) {
+                break;
+                  }
+
+                  search_results_output << " {"
+                  << "docid: " << docid << ", "
+                  << "hitcount: " << hit_count << '}';
+                }
+                search_results_output << '\n';
+
+    }
+}
+InvertedIndex::InvertedIndex(istream& stream) {
+    // читаем поток файлов в current_document
+    for(string current_document; getline(stream, current_document); ){
+        docs.push_back(move(current_document));
+        // сохраняю идентификатор этого файла
+        size_t docid = docs.size() - 1;
+        // файл теперь в базе - читаем из него текст
+        for (string_view word : SplitIntoWords(docs.back()) ) {
+            // ????
+            auto& docids = index[word];
+            // docid - не только Id файла из потока,
+            // но и расположение в векторе index
+            if (!docids.empty() && docids.back().docid==docid ) {
+                docids.back().rating++;
+            } else {
+                docids.push_back({docid, 1});
+            }
         }
-        search_results_output << endl;
     }
 }
 
-void InvertedIndex::Add(const string& document) {
+/*void InvertedIndex::Add(const string& document) {
     docs.push_back(document);
 
     const size_t docid = docs.size() - 1;
     for (const auto& word : SplitIntoWords(document)) {
         index[word].push_back(docid);
     }
-}
+}*/
 
-deque<size_t> InvertedIndex::Lookup(const string& word) const {
+const vector<InvertedIndex::Entry>& InvertedIndex::Lookup(string_view word) const {
+    // нахуя статик ???
+    static vector<InvertedIndex::Entry> result;
     if (auto it = index.find(word); it != index.end()) {
         return it->second;
     } else {
-        return {};
+        return result;
     }
 }
