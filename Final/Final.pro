@@ -11,14 +11,15 @@ SOURCES += \
     parse.cpp \
     search_server.cpp \
     invertedindex.cpp \
-    splitintowords.cpp
+    splitintowords.cpp \
+    new_profile.cpp
 
 HEADERS += \
     iterator_range.h \
     parse.h \
     search_server.h \
     test_runner.h \
-    invertedindex.h
+    invertedindex.h \
+    new_profile.h
 
-DISTFILES += \
-    how_optimization
+DISTFILES +=

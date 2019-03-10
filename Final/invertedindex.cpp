@@ -20,7 +20,7 @@ InvertedIndex::InvertedIndex(istream& stream) {
              * */
 
             auto& docids = index[word];
-
+            // если вектор Id/рейтинг не пустой и мы до сих пор в том де файле
             if (!docids.empty() && docids.back().docid==docid ) {
                 docids.back().rating++;
             } else {
