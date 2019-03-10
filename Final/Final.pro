@@ -9,10 +9,16 @@ CONFIG -= qt
 SOURCES += \
     main.cpp \
     parse.cpp \
-    search_server.cpp
+    search_server.cpp \
+    invertedindex.cpp \
+    splitintowords.cpp
 
 HEADERS += \
     iterator_range.h \
     parse.h \
     search_server.h \
-    test_runner.h
+    test_runner.h \
+    invertedindex.h
+
+DISTFILES += \
+    how_optimization

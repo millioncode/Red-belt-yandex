@@ -10,35 +10,9 @@
 
 #include <deque>
 #include <string_view>
+#include "invertedindex.h"
 using namespace std;
 
-class InvertedIndex {
-    public:
-        // создам конструктор - принимает поток файлов
-        InvertedIndex() = default ;
-        explicit InvertedIndex(istream& is);
-
-        //void Add(const string& document);
-        // заменю лист на дек
-        struct Entry {
-                size_t docid;
-                size_t rating;
-        };
-        const vector<Entry>& Lookup(string_view word) const ;
-
-        const deque<string>& GetDocument() const {
-            return docs;
-        }
-
-    private:
-        // // заменю лист на дек
-        map <string_view, vector<Entry> > index;
-        // заменю на deque, string_view?
-        deque<string> docs;
-};
-/*
- * непосредственно сам поиск
- * */
 class SearchServer {
     public:
         SearchServer() = default;
